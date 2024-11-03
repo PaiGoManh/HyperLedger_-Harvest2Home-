@@ -23,7 +23,7 @@ echo "-------------Generate the genesis block—-------------------------------"
 
 export FABRIC_CFG_PATH=${PWD}/config
 
-export CHANNEL_NAME=harvest2home-channel
+export CHANNEL_NAME=harvest-channel
 
 configtxgen -profile ThreeOrgsChannel -outputBlock ${PWD}/channel-artifacts/${CHANNEL_NAME}.block -channelID $CHANNEL_NAME
 sleep 2
@@ -92,18 +92,18 @@ sleep 1
 
 echo "—---------------package chaincode—-------------"
 
-peer lifecycle chaincode package harvest2home-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest2home-channel_1.0
+peer lifecycle chaincode package harvest-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest-channel_1.0
 sleep 1
 
 echo "—---------------install chaincode in farmer peer—-------------"
 
-peer lifecycle chaincode install harvest2home-channel.tar.gz
+peer lifecycle chaincode install harvest-channel.tar.gz
 sleep 3
 
 peer lifecycle chaincode queryinstalled
 sleep 1
 
-export CC_PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid harvest2home-channel.tar.gz)
+export CC_PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid harvest-channel.tar.gz)
 
 echo "—---------------Approve chaincode in farmer peer—-------------"
 
@@ -149,12 +149,12 @@ sleep 1
 
 echo "—---------------package chaincode—-------------"
 
-peer lifecycle chaincode package harvest2home-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest2home-channel_1.0
+peer lifecycle chaincode package harvest-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest-channel_1.0
 sleep 1
 
 echo "—---------------install chaincode in delivery-partner peer—-------------"
 
-peer lifecycle chaincode install harvest2home-channel.tar.gz
+peer lifecycle chaincode install harvest-channel.tar.gz
 sleep 3
 
 peer lifecycle chaincode queryinstalled
@@ -205,12 +205,12 @@ peer channel getinfo -c $CHANNEL_NAME
 
 echo "—---------------package chaincode—-------------"
 
-peer lifecycle chaincode package harvest2home-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest2home-channel_1.0
+peer lifecycle chaincode package harvest-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest-channel_1.0
 sleep 1
 
 echo "—---------------install chaincode in consumer-association peer—-------------"
 
-peer lifecycle chaincode install harvest2home-channel.tar.gz
+peer lifecycle chaincode install harvest-channel.tar.gz
 sleep 3
 
 peer lifecycle chaincode queryinstalled
@@ -259,12 +259,12 @@ sleep 1
 
 echo "—---------------package chaincode—-------------"
 
-peer lifecycle chaincode package harvest2home-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest2home-channel_1.0
+peer lifecycle chaincode package harvest-channel.tar.gz --path ${PWD}/../Chaincode/Harvest2home --lang node --label harvest-channel_1.0
 sleep 1
 
 echo "—---------------install chaincode in quality-assurance-agency peer—-------------"
 
-peer lifecycle chaincode install harvest2home-channel.tar.gz
+peer lifecycle chaincode install harvest-channel.tar.gz
 sleep 3
 
 peer lifecycle chaincode queryinstalled
