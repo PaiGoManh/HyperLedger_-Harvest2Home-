@@ -2,11 +2,11 @@
 
 const { Contract } = require('fabric-contract-api');
 
-class harvestContract extends Contract {
+class HarvestContract extends Contract {
 
     async instantiate(ctx) {
         console.info('Instantiating the chaincode');
-        await this.initLedger(ctx); 
+        await this.initLedger(ctx);
         console.info('Chaincode instantiated successfully');
     }
 
@@ -16,7 +16,7 @@ class harvestContract extends Contract {
             {
                 consumerId: 'CONSUMER-1',
                 name: 'John Doe',
-                balance: 1000 
+                balance: 1000
             }
         ];
 
@@ -53,7 +53,7 @@ class harvestContract extends Contract {
             quantity,
             price,
             owner,
-            status: 'Pending Approval',
+            status: 'Pending Approval'
         };
         await ctx.stub.putState(productId, Buffer.from(JSON.stringify(product)));
     }
@@ -61,11 +61,11 @@ class harvestContract extends Contract {
     async getAllProducts(ctx) {
         const mspID = ctx.clientIdentity.getMSPID();
         if (mspID !== 'ConsumersAssociationMSP') {
-            throw new Error("Unauthorized: Only farmers can view products.");
+            throw new Error("Unauthorized: Only consumers can view products.");
         }
-        const iterator = await ctx.stub.getStateByRange('', ''); 
+        const iterator = await ctx.stub.getStateByRange('', '');
         const allProducts = [];
-    
+
         while (true) {
             const res = await iterator.next();
             if (res.value && res.value.value.toString()) {
@@ -77,54 +77,16 @@ class harvestContract extends Contract {
                 break;
             }
         }
-    
+
         return JSON.stringify(allProducts);
     }
 
     async getProduct(ctx, productId) {
         const mspID = ctx.clientIdentity.getMSPID();
         if (mspID !== 'ConsumersAssociationMSP') {
-            throw new Error("Unauthorized: Only farmers can view products.");
+            throw new Error("Unauthorized: Only consumers can view products.");
         }
-        const exists = await this.productExists(ctx, productId);
-        if (!exists) {
-            throw new Error(`Product ${productId} does not exist`);
-        }
-        const productData = await ctx.stub.getState(productId);
-        return JSON.parse(productData.toString());
-    }
 
-    async getProduct(ctx, productId) {
-        const mspID = ctx.clientIdentity.getMSPID();
-        if (mspID !== 'ConsumersAssociationMSP') {
-            throw new Error("Unauthorized: Only farmers can view products.");
-        }
-        const exists = await this.productExists(ctx, productId);
-        if (!exists) {
-            throw new Error(`Product ${productId} does not exist`);
-        }
-        const productData = await ctx.stub.getState(productId);
-        return JSON.parse(productData.toString());
-    }
-
-    async getProduct(ctx, productId) {
-        const mspID = ctx.clientIdentity.getMSPID();
-        if (mspID !== 'ConsumersAssociationMSP') {
-            throw new Error("Unauthorized: Only farmers can view products.");
-        }
-        const exists = await this.productExists(ctx, productId);
-        if (!exists) {
-            throw new Error(`Product ${productId} does not exist`);
-        }
-        const productData = await ctx.stub.getState(productId);
-        return JSON.parse(productData.toString());
-    }
-
-    async getProduct(ctx, productId) {
-        const mspID = ctx.clientIdentity.getMSPID();
-        if (mspID !== 'ConsumersAssociationMSP') {
-            throw new Error("Unauthorized: Only farmers can view products.");
-        }
         const exists = await this.productExists(ctx, productId);
         if (!exists) {
             throw new Error(`Product ${productId} does not exist`);
@@ -186,9 +148,9 @@ class harvestContract extends Contract {
         }
 
         const orderAmount = product.price * quantity;
-        const consumerId = `CONSUMER-${Math.floor(100000 + Math.random() * 900000)}`;        
+        const consumerId = `CONSUMER-${Math.floor(100000 + Math.random() * 900000)}`;
         const farmerId = product.owner;
-        
+
         await this.transferFunds(ctx, consumerId, farmerId, orderAmount);
 
         const order = {
@@ -199,7 +161,7 @@ class harvestContract extends Contract {
             farmerId,
             amount: orderAmount,
             status: 'Pending Delivery',
-            deliveryAgentId: null 
+            deliveryAgentId: null
         };
         product.quantity -= quantity;
         await ctx.stub.putState(productId, Buffer.from(JSON.stringify(product)));
@@ -261,8 +223,8 @@ class harvestContract extends Contract {
         order.status = 'Delivered';
         await ctx.stub.putState(orderId, Buffer.from(JSON.stringify(order)));
 
-        await this.rewardTokens(ctx, order.deliveryAgentId, 10); 
-        await this.payDeliveryAgent(ctx, 'QualityAssuranceAgencyMSP', order.deliveryAgentId, 20); 
+        await this.rewardTokens(ctx, order.deliveryAgentId, 10);
+        await this.payDeliveryAgent(ctx, 'QualityAssuranceAgencyMSP', order.deliveryAgentId, 20);
     }
 
     async rewardTokens(ctx, userId, amount) {
@@ -278,7 +240,7 @@ class harvestContract extends Contract {
     async transferFunds(ctx, fromId, toId, amount) {
         let fromData = await ctx.stub.getState(fromId);
         let toData = await ctx.stub.getState(toId);
-        
+
         let fromAccount = fromData && fromData.length > 0 ? JSON.parse(fromData.toString()) : {};
         let toAccount = toData && toData.length > 0 ? JSON.parse(toData.toString()) : {};
 
@@ -293,9 +255,9 @@ class harvestContract extends Contract {
         await ctx.stub.putState(toId, Buffer.from(JSON.stringify(toAccount)));
     }
 
-    async payDeliveryAgent(ctx, payerId, agentId, amount) {
-        await this.transferFunds(ctx, payerId, agentId, amount);
+    async payDeliveryAgent(ctx, fromId, deliveryAgentId, amount) {
+        await this.transferFunds(ctx, fromId, deliveryAgentId, amount);
     }
 }
 
-module.exports = harvestContract;
+module.exports = HarvestContract;
