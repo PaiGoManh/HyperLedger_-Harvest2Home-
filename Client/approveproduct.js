@@ -5,7 +5,7 @@ userClient.submitTxn(
     "qualityAgency",
     "harvest-channel",
     "Harvest2home",
-    "harvestContract",
+    "HarvestContract",
     "approveproduct",
     "",
     "approveProduct",

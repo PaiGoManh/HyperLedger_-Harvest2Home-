@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -7,8 +6,14 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('/api/products');
-        setProducts(response.data);
+        const response = await fetch('/api/products');
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data); 
+          console.log(data); 
+        } else {
+          console.error('Failed to fetch products:', response.statusText);
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -29,17 +34,21 @@ const ProductList = () => {
               <th className="px-4 py-2 border">Quantity</th>
               <th className="px-4 py-2 border">Price</th>
               <th className="px-4 py-2 border">Owner</th>
+              <th className="px-4 py-2 border">Status</th>
             </tr>
           </thead>
           <tbody>
             {products.map((product) => (
               <tr key={product.productId} className="hover:bg-gray-100">
-                <td className="px-4 py-2 border text-center">{product.productId}</td>
+                <td className="px-4 py-2 border text-center">
+                  {product.productId.slice(0, 5)}...{product.productId.slice(5).slice(0, 5)}
+                </td>
                 <td className="px-4 py-2 border">{product.name}</td>
                 <td className="px-4 py-2 border">{product.category}</td>
                 <td className="px-4 py-2 border text-center">{product.quantity}</td>
                 <td className="px-4 py-2 border text-right">${product.price}</td>
                 <td className="px-4 py-2 border">{product.owner}</td>
+                <td className="px-4 py-2 border">{product.status}</td>
               </tr>
             ))}
           </tbody>

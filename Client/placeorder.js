@@ -5,7 +5,7 @@ userClient.submitTxn(
     "consumerAssosiation",  
     "harvest-channel",      
     "Harvest2home",         
-    "harvestContract",      
+    "HarvestContract",      
     "placeorder",           
     "",                     
     "placeOrder",           

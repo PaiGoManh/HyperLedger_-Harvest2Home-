@@ -3,12 +3,12 @@ import axios from 'axios';
 
 const AddProductForm = () => {
   const [formData, setFormData] = useState({
-    productId: '',
     name: '',
     category: '',
     quantity: '',
     price: '',
-    owner: ''
+    owner: '',
+    status:'Pending Approval'
   });
   const [responseMessage, setResponseMessage] = useState('');
   const [isError, setIsError] = useState(false);
@@ -30,7 +30,7 @@ const AddProductForm = () => {
       setResponseMessage(response.data.message);
     } catch (error) {
       setIsError(true);
-      setResponseMessage(error.response?.data?.message || 'An error occurred');
+      setResponseMessage(error.response?.data?.message);
     }
   };
 
@@ -40,21 +40,6 @@ const AddProductForm = () => {
       <form onSubmit={handleSubmit}>
         <div className='flex justify-center gap-[10%] mt-4'>
           <div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="productId">
-              Product ID
-            </label>
-            <input
-              type="text"
-              name="productId"
-              id="productId"
-              value={formData.productId}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-            />
-          </div>
-
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
               Name

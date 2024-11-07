@@ -2,10 +2,10 @@ const { clientApplication } = require('./client');
 
 let userClient = new clientApplication();
 userClient.submitTxn(
-    "consumerAssosiation",
+    "farmer",
     "harvest-channel",
     "Harvest2home",
-    "harvestContract",
+    "HarvestContract",
     "getallproduct",
     "",
     "getAllProducts"

@@ -1,71 +1,65 @@
 'use strict';
 
 const { Contract } = require('fabric-contract-api');
+const { v4: uuidv4 } = require('uuid'); 
+
 
 class HarvestContract extends Contract {
-
-    async instantiate(ctx) {
-        console.info('Instantiating the chaincode');
-        await this.initLedger(ctx);
-        console.info('Chaincode instantiated successfully');
-    }
-
-    async initLedger(ctx) {
-        console.info('Initializing Ledger with Default Consumer Balance');
-        const consumers = [
-            {
-                consumerId: 'CONSUMER-1',
-                name: 'John Doe',
-                balance: 1000
-            }
-        ];
-
-        for (const consumer of consumers) {
-            await ctx.stub.putState(consumer.consumerId, Buffer.from(JSON.stringify(consumer)));
-            console.info(`Added consumer ${consumer.consumerId} to the ledger.`);
-        }
-
-        console.info('Ledger initialization complete.');
-    }
 
     async productExists(ctx, productId) {
         const product = await ctx.stub.getState(productId);
         return (!!product && product.length > 0);
     }
 
-    async addProduct(ctx, productId, name, category, quantity, price, owner) {
+
+    async addProduct(ctx, name, category, quantity, price, owner) {
         const mspID = ctx.clientIdentity.getMSPID();
+        
         if (mspID !== 'FarmerMSP') {
             throw new Error("Unauthorized: Only farmers can add products.");
         }
+        
         if (category !== 'fruit' && category !== 'vegetable') {
             throw new Error("Invalid category: Only fruits and vegetables allowed.");
         }
+        
+        const productId = ctx.stub.getTxID();
+        // const productId = uuidv4().slice(0, 3);
 
+    
         const exists = await this.productExists(ctx, productId);
         if (exists) {
-            throw new Error(`Product ${productId} already exists`);
+            throw new Error(`Product with ID ${productId} already exists.`);
         }
-
+    
         const product = {
+            productId,
             name,
             category,
             quantity,
             price,
             owner,
-            status: 'Pending Approval'
+            status: 'Pending Approval',
         };
+    
         await ctx.stub.putState(productId, Buffer.from(JSON.stringify(product)));
+        return JSON.stringify(product);
     }
+    
+
+
 
     async getAllProducts(ctx) {
         const mspID = ctx.clientIdentity.getMSPID();
-        if (mspID !== 'ConsumersAssociationMSP') {
-            throw new Error("Unauthorized: Only consumers can view products.");
+        const allowedMSPs = ['ConsumersAssociationMSP', 'FarmerMSP', 'QualityAssuranceAgencyMSP', 'DeliverypartnerMSP'];
+    
+        if (!allowedMSPs.includes(mspID)) {
+            throw new Error("Unauthorized: Your organization does not have access to view products.");
         }
+    
         const iterator = await ctx.stub.getStateByRange('', '');
         const allProducts = [];
-
+    
         while (true) {
             const res = await iterator.next();
             if (res.value && res.value.value.toString()) {
@@ -77,9 +71,10 @@ class HarvestContract extends Contract {
                 break;
             }
         }
-
+    
         return JSON.stringify(allProducts);
     }
+    
 
     async getProduct(ctx, productId) {
         const mspID = ctx.clientIdentity.getMSPID();
@@ -127,32 +122,29 @@ class HarvestContract extends Contract {
         product.comments = comments;
         await ctx.stub.putState(productId, Buffer.from(JSON.stringify(product)));
     }
+    
 
     async placeOrder(ctx, orderId, productId, quantity) {
+        
         const mspID = ctx.clientIdentity.getMSPID();
         if (mspID !== 'ConsumersAssociationMSP') {
             throw new Error("Unauthorized: Only consumers can place orders.");
         }
-
+    
         const exists = await this.productExists(ctx, productId);
         if (!exists) {
             throw new Error(`Product ${productId} does not exist`);
         }
-
+    
         const product = JSON.parse((await ctx.stub.getState(productId)).toString());
         if (product.status !== 'Approved') {
             throw new Error(`Product ${productId} is not available for order`);
         }
-        if (product.quantity < quantity) {
-            throw new Error(`Not enough stock for product ${productId}`);
-        }
-
+        
+        const consumerId = ctx.clientIdentity.getID(); 
         const orderAmount = product.price * quantity;
-        const consumerId = `CONSUMER-${Math.floor(100000 + Math.random() * 900000)}`;
         const farmerId = product.owner;
-
-        await this.transferFunds(ctx, consumerId, farmerId, orderAmount);
-
+        
         const order = {
             orderId,
             productId,
@@ -163,11 +155,49 @@ class HarvestContract extends Contract {
             status: 'Pending Delivery',
             deliveryAgentId: null
         };
+    
         product.quantity -= quantity;
         await ctx.stub.putState(productId, Buffer.from(JSON.stringify(product)));
         await ctx.stub.putState(orderId, Buffer.from(JSON.stringify(order)));
+        
+        
+        return JSON.stringify(order);
     }
 
+    async getAllOrders(ctx) {
+        const mspID = ctx.clientIdentity.getMSPID();
+        const allowedMSPs = ['ConsumersAssociationMSP', 'FarmerMSP', 'QualityAssuranceAgencyMSP', 'DeliverypartnerMSP'];
+    
+        if (!allowedMSPs.includes(mspID)) {
+            throw new Error("Unauthorized: Your organization does not have access to view orders.");
+        }
+    
+        const queryString = {
+            selector: {
+                docType: 'order'
+            }
+        };
+    
+        const iterator = await ctx.stub.getQueryResult(JSON.stringify(queryString));
+        const allOrders = [];
+    
+        while (true) {
+            const res = await iterator.next();
+            if (res.value && res.value.value.toString()) {
+                const order = JSON.parse(res.value.value.toString('utf8'));
+                allOrders.push(order);
+            }
+            if (res.done) {
+                await iterator.close();
+                break;
+            }
+        }
+    
+        return JSON.stringify(allOrders);
+    }
+    
+
+    
     async assignDeliveryAgent(ctx, orderId, deliveryAgentId) {
         const mspID = ctx.clientIdentity.getMSPID();
         if (mspID !== 'QualityAssuranceAgencyMSP') {
