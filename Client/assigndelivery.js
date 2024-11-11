@@ -2,18 +2,15 @@ const { clientApplication } = require('./client');
 
 let userClient = new clientApplication();
 userClient.submitTxn(
-    "farmer",
+    "qualityAgency",
     "harvest-channel",
     "Harvest2home",
     "HarvestContract",
-    "addproduct",
+    "assigndelivery",
     "",
-    "addProduct",
-    "Tomato",
-    "vegetable",
-    "4",
-    "30",
-    "farmer4"
+    "assignDeliveryAgent",
+    "order1",
+    "agent1"
 ).then(result => {
     console.log(new TextDecoder().decode(result))
     console.log("Product successfully created")

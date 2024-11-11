@@ -54,7 +54,13 @@ class clientApplication {
                 resultBytes = await contract.submitTransaction(txnName, ...args);
             } else if (txnType == "getallproduct") {
                 resultBytes = await contract.evaluateTransaction(txnName, ...args);            
+            } else if (txnType == "getallorders") {
+                resultBytes = await contract.evaluateTransaction(txnName, ...args);            
             } else if (txnType == "placeorder") {
+                resultBytes = await contract.submitTransaction(txnName, ...args);
+            } else if (txnType == "assigndelivery") {
+                resultBytes = await contract.submitTransaction(txnName, ...args);
+            } else if (txnType == "deliverorder") {
                 resultBytes = await contract.submitTransaction(txnName, ...args);
             } else if (txnType == "pdc") {
                 await contract.submit(txnName, {

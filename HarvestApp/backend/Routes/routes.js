@@ -1,21 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { clientApplication } = require('./client')
-const { Gateway, Wallets } = require('fabric-network');
-const path = require('path');
-const fs = require('fs');
 
-
-// app.post('/api/instantiate', async (req, res, next) => {
-//     try {
-//         const contract = await getContract('farmer');
-//         await contract.submitTransaction('instantiate');
-//         res.status(200).send('Chaincode instantiated successfully.');
-//     } catch (error) {
-//         next(error);
-//     }
-//  });
- 
 router.post('/addProduct', async (req, res) => {
   try {
       const { name, category, quantity, price, owner } = req.body;
@@ -215,12 +201,18 @@ router.get('/orders', async (req, res) => {
   try {
       const ConsumerClient = new clientApplication();
       const result = await ConsumerClient.submitTxn(
-        "consumerAssosiation",
-        "harvest-channel",
-        "Harvest2home",
-        "HarvestContract",
-        "getAllOrders",
-      );
+        "consumerAssosiation",      
+        "harvest-channel",           
+        "Harvest2home",             
+        "HarvestContract",           
+        "getallorders",              
+        "",                          
+        "getAllOrders"               
+    );
+
+      if (!result) {
+          throw new Error("No data received from blockchain");
+      }
 
       const decodedString = new TextDecoder().decode(result);
       const orders = JSON.parse(decodedString);
@@ -231,6 +223,66 @@ router.get('/orders', async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 });
+
+
+router.post('/assignDelivery', async (req, res) => {
+  const { orderId } = req.body;
+  try {
+    const deliveryAgentId = `AGENT-${Math.floor(1000 + Math.random() * 9000)}`;
+    
+    const AgencyClient = new clientApplication();
+    const result = await AgencyClient.submitTxn(
+      "qualityAgency",
+      "harvest-channel",
+      "Harvest2home",
+      "HarvestContract",
+      "assigndelivery",
+      "",
+      "assignDeliveryAgent",
+      orderId,
+      deliveryAgentId
+    );
+    
+    console.log(new TextDecoder().decode(result));
+    res.status(200).json({ message: "Delivery Agent Assigned successfully", deliveryAgentId });
+  } catch (error) {
+    console.error('Error assigning delivery agent:', error);
+    res.status(500).json({ message: "Error adding Agent" });
+  }
+});
+
+router.post('/orderdelivered', async (req, res) => {
+  const { orderId } = req.body;
+  try {
+    const DeliveryClient = new clientApplication();
+    const result = await DeliveryClient.submitTxn(
+      "deliveryPartner",
+      "harvest-channel",
+      "Harvest2home",
+      "HarvestContract",
+      "deliverorder", 
+      "",
+      "deliverOrder",
+      orderId
+    );
+
+    console.log(new TextDecoder().decode(result));
+    res.status(200).json({ message: "Order Delivered successfully" });
+  } catch (error) {
+    console.error('Error in delivery:', error);
+    res.status(500).json({ message: "Error in delivery" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 
 

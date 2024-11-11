@@ -39,19 +39,22 @@ const ProductList = () => {
           </thead>
           <tbody>
             {products.map((product) => (
-              <tr key={product.productId} className="hover:bg-gray-100">
-                <td className="px-4 py-2 border text-center">
-                  {product.productId.slice(0, 5)}...{product.productId.slice(5).slice(0, 5)}
-                </td>
-                <td className="px-4 py-2 border">{product.name}</td>
-                <td className="px-4 py-2 border">{product.category}</td>
-                <td className="px-4 py-2 border text-center">{product.quantity}</td>
-                <td className="px-4 py-2 border text-right">${product.price}</td>
-                <td className="px-4 py-2 border">{product.owner}</td>
-                <td className="px-4 py-2 border">{product.status}</td>
-              </tr>
+              (product.category === 'fruit' || product.name === 'vegetable') && (
+                <tr key={product.productId} className="hover:bg-gray-100">
+                  <td className="px-4 py-2 border text-center">
+                    {product.productId.slice(0, 5)}...{product.productId.slice(5).slice(0, 5)}
+                  </td>
+                  <td className="px-4 py-2 border">{product.name}</td>
+                  <td className="px-4 py-2 border">{product.category}</td>
+                  <td className="px-4 py-2 border text-center">{product.quantity}</td>
+                  <td className="px-4 py-2 border text-right">${product.price}</td>
+                  <td className="px-4 py-2 border">{product.owner}</td>
+                  <td className="px-4 py-2 border">{product.status}</td>
+                </tr>
+              )
             ))}
           </tbody>
+
         </table>
       ) : (
         <p className="text-center text-gray-500">No products available.</p>

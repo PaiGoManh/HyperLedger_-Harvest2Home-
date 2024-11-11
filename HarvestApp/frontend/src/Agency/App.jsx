@@ -6,6 +6,7 @@ import Navbar2 from '../Components/Agency/Navbar2';
 import ProductList from './ProductList';
 import ApprovedProducts from './ApprovedProducts';
 import RejectedProducts from './RejectedProducts'
+import OrderList from './OrderList';
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
           <Route path='/productlist' element={<ProductList/>} />
           <Route path='/approved' element={<ApprovedProducts/>} />
           <Route path='/rejected' element={<RejectedProducts/>} />
+          <Route path='/orderlist' element={<OrderList/>} />
         </Routes>
       </div>
     </>

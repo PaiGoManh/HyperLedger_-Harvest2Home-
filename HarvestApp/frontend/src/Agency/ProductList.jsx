@@ -26,7 +26,6 @@ const ProductList = () => {
         body: JSON.stringify({ productId }),
       });
       if (response.ok) {
-        // Update the local state to reflect the change
         setProducts(prevProducts =>
           prevProducts.map(product =>
             product.productId === productId

@@ -22,6 +22,10 @@ const Navbar2 = () => {
           <FaCartShopping />
           <Link to='/agency/rejected'>Rejected Products</Link>
         </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#111D2D] cursor-pointer hover:bg-black transition duration-200">
+          <FaCartShopping />
+          <Link to='/agency/orderlist'>Order List</Link>
+        </div>
       </nav>
   );
 };

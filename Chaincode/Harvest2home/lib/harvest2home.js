@@ -47,8 +47,6 @@ class HarvestContract extends Contract {
     }
     
 
-
-
     async getAllProducts(ctx) {
         const mspID = ctx.clientIdentity.getMSPID();
         const allowedMSPs = ['ConsumersAssociationMSP', 'FarmerMSP', 'QualityAssuranceAgencyMSP', 'DeliverypartnerMSP'];
@@ -144,10 +142,12 @@ class HarvestContract extends Contract {
         const consumerId = ctx.clientIdentity.getID(); 
         const orderAmount = product.price * quantity;
         const farmerId = product.owner;
+        const name = product.name;
         
         const order = {
             orderId,
             productId,
+            name,
             quantity,
             consumerId,
             farmerId,
@@ -159,8 +159,6 @@ class HarvestContract extends Contract {
         product.quantity -= quantity;
         await ctx.stub.putState(productId, Buffer.from(JSON.stringify(product)));
         await ctx.stub.putState(orderId, Buffer.from(JSON.stringify(order)));
-        
-        
         return JSON.stringify(order);
     }
 
@@ -172,13 +170,16 @@ class HarvestContract extends Contract {
             throw new Error("Unauthorized: Your organization does not have access to view orders.");
         }
     
-        const queryString = {
-            selector: {
-                docType: 'order'
-            }
-        };
+        // const queryString = {
+        //     selector: {
+        //         docType: 'order'
+        //     }
+        // };
     
-        const iterator = await ctx.stub.getQueryResult(JSON.stringify(queryString));
+        // const iterator = await ctx.stub.getQueryResult(JSON.stringify(queryString));
+        // const allOrders = [];
+
+        const iterator = await ctx.stub.getStateByRange('', '');
         const allOrders = [];
     
         while (true) {
@@ -192,10 +193,9 @@ class HarvestContract extends Contract {
                 break;
             }
         }
-    
+        console.log("All Orders fetched:", allOrders);
         return JSON.stringify(allOrders);
     }
-    
 
     
     async assignDeliveryAgent(ctx, orderId, deliveryAgentId) {
@@ -236,7 +236,7 @@ class HarvestContract extends Contract {
 
     async deliverOrder(ctx, orderId) {
         const mspID = ctx.clientIdentity.getMSPID();
-        if (mspID !== 'DeliveryPartnerMSP') {
+        if (mspID !== 'DeliverypartnerMSP') {
             throw new Error("Unauthorized: Only delivery partners can update deliveries.");
         }
 
@@ -252,42 +252,8 @@ class HarvestContract extends Contract {
 
         order.status = 'Delivered';
         await ctx.stub.putState(orderId, Buffer.from(JSON.stringify(order)));
-
-        await this.rewardTokens(ctx, order.deliveryAgentId, 10);
-        await this.payDeliveryAgent(ctx, 'QualityAssuranceAgencyMSP', order.deliveryAgentId, 20);
     }
 
-    async rewardTokens(ctx, userId, amount) {
-        let userData = await ctx.stub.getState(userId);
-        let user = {};
-        if (userData && userData.length > 0) {
-            user = JSON.parse(userData.toString());
-        }
-        user.tokens = (user.tokens || 0) + amount;
-        await ctx.stub.putState(userId, Buffer.from(JSON.stringify(user)));
-    }
-
-    async transferFunds(ctx, fromId, toId, amount) {
-        let fromData = await ctx.stub.getState(fromId);
-        let toData = await ctx.stub.getState(toId);
-
-        let fromAccount = fromData && fromData.length > 0 ? JSON.parse(fromData.toString()) : {};
-        let toAccount = toData && toData.length > 0 ? JSON.parse(toData.toString()) : {};
-
-        if ((fromAccount.balance || 0) < amount) {
-            throw new Error(`Insufficient funds for ${fromId}`);
-        }
-
-        fromAccount.balance = (fromAccount.balance || 0) - amount;
-        toAccount.balance = (toAccount.balance || 0) + amount;
-
-        await ctx.stub.putState(fromId, Buffer.from(JSON.stringify(fromAccount)));
-        await ctx.stub.putState(toId, Buffer.from(JSON.stringify(toAccount)));
-    }
-
-    async payDeliveryAgent(ctx, fromId, deliveryAgentId, amount) {
-        await this.transferFunds(ctx, fromId, deliveryAgentId, amount);
-    }
 }
 
 module.exports = HarvestContract;

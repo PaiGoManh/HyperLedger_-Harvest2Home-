@@ -1,5 +1,5 @@
 const { EventListener} = require('./events')
 
-let ManufacturerEvent = new EventListener();
+let FarmerEvent = new EventListener();
 
-ManufacturerEvent.BlockEventListener("manufacturer","autochannel");
+FarmerEvent.BlockEventListener("farmer","harvest-channel");

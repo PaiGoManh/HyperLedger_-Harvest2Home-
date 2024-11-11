@@ -6,7 +6,7 @@ const ConsumerHome = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
 
   useEffect(() => {
     const fetchApprovedProducts = async () => {
@@ -42,6 +42,7 @@ const ConsumerHome = () => {
           quantity: quantity                   
       })      });
       const data = await response.json();
+      console.log("data",data)
   
       if (response.ok) {
         alert(`Order placed successfully! Order ID: ${data.orderId}`);
